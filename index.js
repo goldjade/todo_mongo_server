@@ -9,6 +9,7 @@ const mongoose = require('mongoose');
 const { Todo } = require('./model/TodoModel.js');
 //개발 인증 관련
 const config = require('./config/key.js');
+const { exec } = require('child_process');
 //express 인스턴스 생성
 const app = express();
 //포트 번호
@@ -70,11 +71,73 @@ app.post('/api/post/list', (req, res) => {
   Todo.find({})
     .exec()
     .then((doc) => {
-      console.log(doc);
+      // console.log(doc);
       res.status(200).json({ success: true, initTodo: doc });
     })
     .catch((error) => {
       console.log(error);
       res.status(400).json({ success: false });
     });
+});
+//할일의 complted를 업데이트
+app.post('/api/post/updatetoggle', (req, res) => {
+  let temp = {
+    completed: req.body.completed,
+  };
+  //mongoos문서참조
+  //업데이트 할거인데 아이디 같은거 찾아봐라 , 세팅해라 exec()실행 명령어
+  Todo.updateOne({ id: req.body.id }, { $set: temp })
+    .exec()
+    .then(() => {
+      console.log('completed 업데이트 완료');
+      res.status(200).json({ success: true });
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+});
+
+// 타이틀 업데이트
+app.post('/api/post/updatetitle', (req, res) => {
+  // console.log(req.body);
+  let temp = {
+    title: req.body.title,
+  };
+
+  // mongoose 문서참조
+  Todo.updateOne({ id: req.body.id }, { $set: temp })
+    .exec()
+    .then(() => {
+      // console.log("completed 업데이트 완료");
+      res.status(200).json({ success: true });
+    })
+    .catch((err) => {
+      console.log(err);
+      res.status(400).json({ success: false });
+    });
+});
+//할일 삭제
+app.post('/api/post/delete', (req, res) => {
+  console.log(req.body);
+  Todo.deleteOne({ id: req.body.id })
+    .exec()
+    .then(() => {
+      res.status(200).json({ success: true });
+    })
+    .catch((err) => {
+      console.log(err);
+      res.status(400).json({ success: false });
+    });
+});
+//전체 할일 삭제
+app.post('/api/post/deleteall', (req, res) => {
+  Todo.deleteMany({})
+  .exec()
+  .then(()=>{
+    res.status(200).json({ success: true });
+  })
+  .catch((err)=>{
+    console.log(err)
+      res.status(400).json({ success: false })
+  })
 });
