@@ -17,6 +17,7 @@ router.post('/submit', (req, res) => {
     id: req.body.id,
     title: req.body.title,
     completed: req.body.completed,
+    uid: req.body.uid,
     // 여기서 바로 author 를 저장할 수 없다.
     // User Modle 에서 uid 를 이용해서
     // ObjectId 를 알아내고.. 내용을 복사해야
@@ -49,18 +50,21 @@ router.post('/submit', (req, res) => {
     });
 });
 // 목록 읽어오기
-router.post("/list", (req, res) => {
+router.post('/list', (req, res) => {
   // console.log("전체목록 호출", req.body);
   let sort = {};
-  if (req.body.sort === "최신글") {
+  if (req.body.sort === '최신글') {
     sort = { id: -1 };
   } else {
     sort = { id: 1 };
   }
 
-  Todo.find({})
-    .populate("author")
+  Todo.find({ title: new RegExp(req.body.search), uid: req.body.uid })
+    .populate('author')
     .sort(sort)
+    //0이면 0부터 5개 0~4 ,5~9,10~14
+    .skip(req.body.skip)
+    .limit(5) //목록 5개 보여줌
     .exec()
     .then((doc) => {
       // console.log(doc);
